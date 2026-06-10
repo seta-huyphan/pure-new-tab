@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aura Studio — New Tab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-1: #FFF9FB;
+    --bg-2: #FAF3E0;   /* cream */
+    --bg-3: #FCE7F0;   /* sakura mist */
+    --lavender: #D8B4FE; /* soft lilac */
+    --pink: #F7CAD0;     /* sakura pink */
+    --ice: #B185A7;      /* mauve */
+    --cream: #FAF3E0;
+    --text: #4A3B4A;
+    --text-soft: #6B5B6B;
+    --text-dim: #9B8A9B;
+    --glass: rgba(255,255,255,0.6);
+    --glass-strong: rgba(255,255,255,0.85);
+    --border: rgba(177,133,167,0.18);
+    --shadow: 0 20px 60px rgba(177,133,167,0.18);
+    --radius: 22px;
+    --radius-sm: 14px;
+    --grad-aurora: linear-gradient(135deg, #F7CAD0 0%, #D8B4FE 50%, #B185A7 100%);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-1: #1A1625;
+      --bg-2: #221E32;
+      --bg-3: #2D2640;
+      --lavender: #C4B5FD;
+      --pink: #F9A8D4;
+      --ice: #E7C27D;     /* soft gold */
+      --cream: #F8FAFC;   /* moon white */
+      --text: #F8FAFC;
+      --text-soft: #CFC9DD;
+      --text-dim: #9089A8;
+      --glass: rgba(255,255,255,0.08);
+      --glass-strong: rgba(255,255,255,0.14);
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 20px 60px rgba(0,0,0,0.55);
+      --grad-aurora: linear-gradient(135deg, #C4B5FD 0%, #F9A8D4 50%, #E7C27D 100%);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--text);
+    background: var(--bg-1);
+    overflow-x: hidden;
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Aurora background */
+  .bg-stage {
+    position: fixed; inset: 0; z-index: -2;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 0%, rgba(232,180,188,0.25), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 80% 10%, rgba(212,163,115,0.20), transparent 60%),
+      radial-gradient(ellipse 70% 50% at 50% 100%, rgba(205,180,219,0.18), transparent 60%),
+      linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-3) 100%);
+  }
+  .aurora {
+    position: fixed; inset: -10%; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(232,180,188,0.35), transparent 35%),
+      radial-gradient(circle at 70% 60%, rgba(212,163,115,0.30), transparent 40%),
+      radial-gradient(circle at 50% 80%, rgba(205,180,219,0.28), transparent 40%);
+    filter: blur(60px);
+    animation: aurora-drift 24s ease-in-out infinite alternate;
+    opacity: 0.7;
+  }
+  @keyframes aurora-drift {
+    0% { transform: translate(0,0) scale(1); }
+    100% { transform: translate(-4%, 3%) scale(1.08); }
+  }
+  .particles { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+  /* Sakura petal: oval shape with soft pink gradient */
+  .particle {
+    position: absolute;
+    width: 14px; height: 11px;
+    background: radial-gradient(ellipse at 30% 30%, #FFE6EE 0%, var(--pink) 55%, #E89AAA 100%);
+    border-radius: 150% 0 150% 0 / 100% 0 100% 0;
+    opacity: 0.85;
+    filter: drop-shadow(0 2px 4px rgba(177,133,167,0.25));
+    animation: petal-fall linear infinite;
+    transform-origin: center;
+  }
+  @media (prefers-color-scheme: dark) {
+    .particle { opacity: 0.55; filter: drop-shadow(0 2px 6px rgba(196,181,253,0.35)); }
+  }
+  @keyframes petal-fall {
+    0%   { transform: translate3d(0, -10vh, 0) rotate(0deg);   opacity: 0; }
+    10%  { opacity: 0.9; }
+    50%  { transform: translate3d(40px, 50vh, 0) rotate(180deg); }
+    90%  { opacity: 0.8; }
+    100% { transform: translate3d(-30px, 110vh, 0) rotate(360deg); opacity: 0; }
+  }
+
+
+  /* Layout */
+  .shell {
+    max-width: 1240px; margin: 0 auto; padding: 32px 28px 80px;
+  }
+
+  /* Top bar */
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 36px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 18px;
+    letter-spacing: 0.3px;
+  }
+  .brand-dot {
+    width: 26px; height: 26px; border-radius: 8px;
+    background: var(--grad-aurora);
+    box-shadow: 0 0 20px rgba(232,180,188,0.6);
+  }
+  .top-actions { display: flex; gap: 10px; align-items: center; }
+  .pill {
+    padding: 8px 14px; border-radius: 999px;
+    background: var(--glass); border: 1px solid var(--border);
+    color: var(--text-soft); font-size: 13px; cursor: pointer;
+    backdrop-filter: blur(12px); transition: all 0.2s;
+  }
+  .pill:hover { background: var(--glass-strong); color: var(--text); }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--grad-aurora);
+    display: grid; place-items: center; font-weight: 600; font-size: 14px;
+    color: #3F3D56; cursor: pointer;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+  }
+
+  /* Hero */
+  .hero {
+    margin-bottom: 28px;
+    padding: 8px 4px 12px;
+  }
+  .greeting {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(40px, 5vw, 56px);
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 8px;
+  }
+  .greeting em {
+    font-style: italic;
+    background: var(--grad-aurora);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub {
+    color: var(--text-soft); font-size: 17px; font-weight: 300;
+    margin-bottom: 24px;
+  }
+
+  /* Search */
+  .search-wrap {
+    max-width: 720px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px;
+    backdrop-filter: blur(20px);
+    box-shadow: var(--shadow);
+  }
+  .search-modes {
+    display: flex; gap: 4px; padding: 4px;
+  }
+  .mode {
+    flex: none; padding: 7px 14px; border-radius: 12px;
+    font-size: 12.5px; color: var(--text-dim); cursor: pointer;
+    border: none; background: transparent; font-family: inherit;
+    transition: all 0.2s; font-weight: 500;
+  }
+  .mode.active { background: var(--glass-strong); color: var(--text); }
+  .search-input-row {
+    display: flex; align-items: center; gap: 10px; padding: 6px 14px;
+  }
+  .search-input-row svg { color: var(--text-dim); flex: none; }
+  .search-input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text); font-size: 15px; font-family: inherit;
+    padding: 14px 0;
+  }
+  .search-input::placeholder { color: var(--text-dim); }
+  .send-btn {
+    width: 36px; height: 36px; border-radius: 12px;
+    background: var(--grad-aurora); border: none; cursor: pointer;
+    display: grid; place-items: center; color: #3F3D56;
+    transition: transform 0.2s;
+  }
+  .send-btn:hover { transform: scale(1.05); }
+
+  /* Mood */
+  .mood-section { margin: 32px 0 28px; }
+  .mood-label {
+    font-size: 13px; color: var(--text-dim); margin-bottom: 12px;
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;
+  }
+  .moods { display: flex; gap: 10px; flex-wrap: wrap; }
+  .mood {
+    padding: 10px 16px; border-radius: 999px;
+    background: var(--glass); border: 1px solid var(--border);
+    color: var(--text-soft); font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    backdrop-filter: blur(12px); transition: all 0.25s;
+  }
+  .mood:hover { transform: translateY(-2px); background: var(--glass-strong); }
+  .mood.selected {
+    background: rgba(232,180,188,0.18);
+    border-color: var(--lavender);
+    color: var(--text);
+    box-shadow: 0 0 24px rgba(232,180,188,0.25);
+  }
+  .mood-suggestions {
+    margin-top: 14px; padding: 14px 18px;
+    background: var(--glass); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 13.5px;
+    color: var(--text-soft); display: none;
+  }
+  .mood-suggestions.visible { display: block; animation: fade-in 0.3s ease; }
+  .mood-suggestions strong { color: var(--text); font-weight: 500; }
+  @keyframes fade-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Grid */
+  .main-grid {
+    display: grid; grid-template-columns: repeat(12, 1fr);
+    gap: 20px;
+  }
+  .col-6 { grid-column: span 6; }
+  .col-8 { grid-column: span 8; }
+  .col-4 { grid-column: span 4; }
+  .col-12 { grid-column: span 12; }
+  @media (max-width: 900px) {
+    .col-6, .col-8, .col-4 { grid-column: span 12; }
+  }
+
+  .card {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    backdrop-filter: blur(20px);
+    transition: transform 0.25s, border-color 0.25s, background 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(232,180,188,0.35);
+    background: var(--glass-strong);
+  }
+  .card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Fraunces', serif; font-size: 19px; font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .card-emoji {
+    width: 38px; height: 38px; border-radius: 12px;
+    display: grid; place-items: center; font-size: 18px;
+    background: rgba(255,255,255,0.7);
+  }
+  .card-action {
+    font-size: 12px; color: var(--text-dim); cursor: pointer;
+    padding: 4px 10px; border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .card-action:hover { color: var(--text); border-color: var(--lavender); }
+
+  .item-list { display: flex; flex-direction: column; gap: 8px; }
+  .item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; border-radius: 12px;
+    background: rgba(255,255,255,0.5);
+    font-size: 13.5px; color: var(--text-soft); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .item:hover {
+    background: rgba(232,180,188,0.12);
+    color: var(--text);
+    transform: translateX(2px);
+  }
+  .item-meta { color: var(--text-dim); font-size: 11.5px; }
+
+  .continue-btn {
+    margin-top: 14px; width: 100%;
+    padding: 11px; border-radius: 12px;
+    background: var(--grad-aurora); color: #3F3D56;
+    border: none; cursor: pointer; font-weight: 600; font-size: 13.5px;
+    font-family: inherit; transition: transform 0.2s;
+  }
+  .continue-btn:hover { transform: translateY(-1px); }
+
+  /* Vision Board */
+  .vision-board { padding: 24px; }
+  .vision-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-top: 14px;
+  }
+  .vision-tile {
+    aspect-ratio: 1; border-radius: 14px;
+    background: var(--grad-aurora);
+    display: grid; place-items: center; padding: 12px;
+    text-align: center; font-family: 'Fraunces', serif;
+    font-size: 14px; color: #3F3D56; font-weight: 500;
+    position: relative; overflow: hidden;
+    cursor: pointer; transition: transform 0.3s;
+  }
+  .vision-tile::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+  }
+  .vision-tile:hover { transform: scale(1.04); }
+  .vision-tile:nth-child(2) { background: linear-gradient(135deg, #D4A373, #E8B4BC); }
+  .vision-tile:nth-child(3) { background: linear-gradient(135deg, #CDB4DB, #E8B4BC); }
+  .vision-tile:nth-child(4) { background: linear-gradient(135deg, #FFF8F0, #D4A373); }
+  .vision-tile:nth-child(5) { background: linear-gradient(135deg, #E8B4BC, #CDB4DB); }
+  .vision-tile:nth-child(6) { background: linear-gradient(135deg, #D4A373, #FFF8F0); }
+  .vision-tile span { position: relative; z-index: 1; line-height: 1.25; }
+
+  /* Luna AI */
+  .luna {
+    background: linear-gradient(160deg, rgba(232,180,188,0.18), rgba(212,163,115,0.12));
+    border: 1px solid rgba(232,180,188,0.3);
+  }
+  .luna-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .luna-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--grad-aurora);
+    display: grid; place-items: center;
+    box-shadow: 0 0 24px rgba(232,180,188,0.5);
+    animation: glow 3s ease-in-out infinite alternate;
+  }
+  @keyframes glow {
+    from { box-shadow: 0 0 16px rgba(232,180,188,0.4); }
+    to { box-shadow: 0 0 32px rgba(212,163,115,0.6); }
+  }
+  .luna-name { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 500; }
+  .luna-status { font-size: 11.5px; color: var(--text-dim); }
+  .luna-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .luna-chip {
+    padding: 10px 12px; border-radius: 12px;
+    background: rgba(255,255,255,0.7); border: 1px solid var(--border);
+    color: var(--text-soft); font-size: 12.5px; cursor: pointer;
+    text-align: left; font-family: inherit; transition: all 0.2s;
+  }
+  .luna-chip:hover { background: rgba(232,180,188,0.18); color: var(--text); }
+
+  /* Inspiration feed */
+  .feed-item {
+    display: flex; gap: 12px; padding: 12px;
+    border-radius: 12px; cursor: pointer; transition: background 0.2s;
+  }
+  .feed-item:hover { background: rgba(255,255,255,0.6); }
+  .feed-thumb {
+    width: 64px; height: 64px; border-radius: 12px; flex: none;
+    background: var(--grad-aurora);
+  }
+  .feed-thumb.t2 { background: linear-gradient(135deg, #D4A373, #CDB4DB); }
+  .feed-thumb.t3 { background: linear-gradient(135deg, #FFF8F0, #E8B4BC); }
+  .feed-body { flex: 1; min-width: 0; }
+  .feed-tag {
+    font-size: 10.5px; color: var(--lavender);
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;
+  }
+  .feed-title {
+    font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500;
+    margin-top: 4px; line-height: 1.3;
+  }
+
+  /* Focus / Achievement */
+  .focus-goal {
+    padding: 14px; border-radius: 12px;
+    background: rgba(255,255,255,0.6); margin-bottom: 12px;
+    font-size: 13.5px; color: var(--text-soft);
+  }
+  .focus-goal strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 4px; font-family: 'Fraunces', serif; font-size: 15px; }
+  .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .stat-row:last-child { border: none; }
+  .stat-row .v { color: var(--lavender); font-weight: 600; font-family: 'Fraunces', serif; }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .badge {
+    padding: 5px 10px; border-radius: 999px;
+    background: rgba(232,180,188,0.15); border: 1px solid rgba(232,180,188,0.3);
+    font-size: 11px; color: var(--lavender);
+  }
+
+  /* Music widget */
+  .music {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px; border-radius: 16px;
+    background: rgba(255,255,255,0.6);
+    margin-top: 12px;
+  }
+  .music-cover {
+    width: 56px; height: 56px; border-radius: 12px;
+    background: linear-gradient(135deg, #FFF8F0, #E8B4BC);
+    display: grid; place-items: center; font-size: 22px;
+  }
+  .music-info { flex: 1; min-width: 0; }
+  .music-title { font-size: 13.5px; font-weight: 500; }
+  .music-sub { font-size: 11.5px; color: var(--text-dim); }
+  .music-play {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--grad-aurora); border: none; cursor: pointer;
+    display: grid; place-items: center; color: #3F3D56;
+  }
+  .sound-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+  .sound-chip {
+    padding: 6px 12px; border-radius: 999px; font-size: 12px;
+    background: rgba(255,255,255,0.65); border: 1px solid var(--border);
+    color: var(--text-soft); cursor: pointer;
+  }
+  .sound-chip.active { background: rgba(232,180,188,0.2); border-color: var(--lavender); color: var(--text); }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(40px);
+    padding: 12px 20px; border-radius: 999px;
+    background: rgba(255,248,247,0.97); border: 1px solid var(--border);
+    color: var(--text); font-size: 13px; backdrop-filter: blur(20px);
+    opacity: 0; transition: all 0.3s; pointer-events: none;
+    box-shadow: var(--shadow);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="bg-stage"></div>
+<div class="aurora"></div>
+<div class="particles" id="particles"></div>
+
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <span>Aura Studio</span>
+    </div>
+    <div class="top-actions">
+      <button class="pill" id="themeBtn">🌙 Lavender Aurora</button>
+      <button class="pill">Settings</button>
+      <div class="avatar">H</div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1 class="greeting" id="greeting">Good Evening, Huy <em>🌙</em></h1>
+    <p class="sub" id="subline">What's inspiring you today?</p>
+
+    <div class="search-wrap">
+      <div class="search-modes">
+        <button class="mode active" data-mode="search">Search</button>
+        <button class="mode" data-mode="ai">Ask AI</button>
+        <button class="mode" data-mode="notes">Find Notes</button>
+      </div>
+      <div class="search-input-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        <input id="searchInput" class="search-input" placeholder="Explain quantum physics" />
+        <button class="send-btn" id="sendBtn" title="Go">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="mood-section">
+    <div class="mood-label">How are you feeling today?</div>
+    <div class="moods" id="moods">
+      <div class="mood" data-mood="focused">😊 Focused</div>
+      <div class="mood" data-mood="calm">🌱 Calm</div>
+      <div class="mood" data-mood="inspired">✨ Inspired</div>
+      <div class="mood" data-mood="creative">🎨 Creative</div>
+      <div class="mood" data-mood="tired">😴 Tired</div>
+    </div>
+    <div class="mood-suggestions" id="moodSuggestions"></div>
+  </section>
+
+  <main class="main-grid">
+    <!-- Personal Workspace -->
+    <div class="card col-6">
+      <div class="card-head">
+        <div class="card-title"><div class="card-emoji">📚</div>Study</div>
+        <span class="card-action">Continue</span>
+      </div>
+      <div class="item-list">
+        <div class="item"><span>Physics Notes</span><span class="item-meta">2h ago</span></div>
+        <div class="item"><span>Chemistry Quiz</span><span class="item-meta">Yesterday</span></div>
+        <div class="item"><span>Essay Draft — Climate</span><span class="item-meta">3 days</span></div>
+      </div>
+      <button class="continue-btn">Continue Studying</button>
+    </div>
+
+    <div class="card col-6">
+      <div class="card-head">
+        <div class="card-title"><div class="card-emoji">🎨</div>Create</div>
+        <span class="card-action">Open</span>
+      </div>
+      <div class="item-list">
+        <div class="item"><span>Canva — Poster v3</span><span class="item-meta">Draft</span></div>
+        <div class="item"><span>Figma — UI Practice</span><span class="item-meta">Editing</span></div>
+        <div class="item"><span>AI Image Generator</span><span class="item-meta">New</span></div>
+      </div>
+      <button class="continue-btn">Open Workspace</button>
+    </div>
+
+    <div class="card col-6">
+      <div class="card-head">
+        <div class="card-title"><div class="card-emoji">🌙</div>Journal</div>
+        <span class="card-action">Write</span>
+      </div>
+      <div class="item-list">
+        <div class="item"><span>My Notes</span><span class="item-meta">12 entries</span></div>
+        <div class="item"><span>Personal Journal</span><span class="item-meta">Today</span></div>
+        <div class="item"><span>Reading List</span><span class="item-meta">8 books</span></div>
+      </div>
+      <button class="continue-btn">Open Journal</button>
+    </div>
+
+    <div class="card col-6">
+      <div class="card-head">
+        <div class="card-title"><div class="card-emoji">🎵</div>Entertainment</div>
+        <span class="card-action">Play</span>
+      </div>
+      <div class="item-list">
+        <div class="item"><span>Spotify — Soft Pop</span><span class="item-meta">Playlist</span></div>
+        <div class="item"><span>YouTube — Study With Me</span><span class="item-meta">Live</span></div>
+        <div class="item"><span>Netflix — My List</span><span class="item-meta">14</span></div>
+      </div>
+      <div class="music">
+        <div class="music-cover">🎧</div>
+        <div class="music-info">
+          <div class="music-title">Lo-fi Study Beats</div>
+          <div class="music-sub">Ambient · 2h focus</div>
+        </div>
+        <button class="music-play" id="musicPlay">▶</button>
+      </div>
+    </div>
+
+    <!-- Vision Board -->
+    <div class="card vision-board col-8">
+      <div class="card-head">
+        <div class="card-title"><div class="card-emoji">✨</div>My Vision Board</div>
+        <span class="card-action">+ Add</span>
+      </div>
+      <div class="vision-grid">
+        <div class="vision-tile"><span>Reach IELTS 7.0</span></div>
+        <div class="vision-tile"><span>Learn UI Design</span></div>
+        <div class="vision-tile"><span>Read 20 Books</span></div>
+        <div class="vision-tile"><span>Travel to Japan</span></div>
+        <div class="vision-tile"><span>Launch Portfolio</span></div>
+        <div class="vision-tile"><span>Morning Routine</span></div>
+      </div>
+    </div>
+
+    <!-- Luna AI -->
+    <div class="card luna col-4">
+      <div class="luna-head">
+        <div class="luna-avatar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFF8F0"><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2zm6 10l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3z"/></svg>
+        </div>
+        <div>
+          <div class="luna-name">Luna AI</div>
+          <div class="luna-status">Your creative partner • Ready</div>
+        </div>
+      </div>
+      <div class="luna-actions">
+        <button class="luna-chip">📝 Generate Study Notes</button>
+        <button class="luna-chip">💡 Brainstorm Ideas</button>
+        <button class="luna-chip">📊 Create Presentation</button>
+        <button class="luna-chip">📅 Plan My Week</button>
+        <button class="luna-chip">✍️ Write Better Essays</button>
+        <button class="luna-chip">🌸 Daily Reflection</button>
+      </div>
+    </div>
+
+    <!-- Inspiration feed -->
+    <div class="card col-6">
+      <div class="card-head">
+        <div class="card-title"><div class="card-emoji">⭐</div>Today's Inspiration</div>
+        <span class="card-action">Refresh</span>
+      </div>
+      <div class="feed-item">
+        <div class="feed-thumb"></div>
+        <div class="feed-body">
+          <div class="feed-tag">Study</div>
+          <div class="feed-title">5 Ways to Improve Your Study Routine</div>
+        </div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-thumb t2"></div>
+        <div class="feed-body">
+          <div class="feed-tag">Design</div>
+          <div class="feed-title">Design Trends 2026 — Soft Futures</div>
+        </div>
+      </div>
+      <div class="feed-item">
+        <div class="feed-thumb t3"></div>
+        <div class="feed-body">
+          <div class="feed-tag">Science</div>
+          <div class="feed-title">How NASA Builds Space Telescopes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Focus mode -->
+    <div class="card col-3">
+      <div class="card-head">
+        <div class="card-title"><div class="card-emoji">🎯</div>Deep Focus</div>
+      </div>
+      <div class="focus-goal">
+        <strong>Today's Goal</strong>
+        Complete Biology revision — chapter 8
+      </div>
+      <button class="continue-btn">Start Focus Session</button>
+      <div class="sound-chips">
+        <div class="sound-chip active">Lo-fi</div>
+        <div class="sound-chip">Rain</div>
+        <div class="sound-chip">Forest</div>
+        <div class="sound-chip">Cafe</div>
+      </div>
+    </div>
+
+    <!-- Achievement -->
+    <div class="card col-3">
+      <div class="card-head">
+        <div class="card-title"><div class="card-emoji">🌸</div>My Journey</div>
+      </div>
+      <div class="stat-row"><span>Streak</span><span class="v">14 days</span></div>
+      <div class="stat-row"><span>Sessions</span><span class="v">28</span></div>
+      <div class="stat-row"><span>Projects</span><span class="v">3</span></div>
+      <div class="badges">
+        <span class="badge">Creative Thinker</span>
+        <span class="badge">Science Explorer</span>
+        <span class="badge">Essay Master</span>
+        <span class="badge">Design Enthusiast</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Falling sakura petals
+  const pContainer = document.getElementById('particles');
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = (-10 - Math.random() * 30) + '%';
+    p.style.animationDuration = (10 + Math.random() * 14) + 's';
+    p.style.animationDelay = Math.random() * 14 + 's';
+    const scale = 0.6 + Math.random() * 1.1;
+    p.style.transform = `scale(${scale})`;
+    p.style.opacity = (0.55 + Math.random() * 0.35).toString();
+    pContainer.appendChild(p);
+  }
+
+  // Toast
+  const toast = document.getElementById('toast');
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(window.__toastT);
+    window.__toastT = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  // Greeting
+  const greetingEl = document.getElementById('greeting');
+  const sublineEl = document.getElementById('subline');
+  const h = new Date().getHours();
+  let timeLabel = 'Good Evening', emoji = '🌙', sub = "What's inspiring you today?";
+  if (h < 12) { timeLabel = 'Good Morning'; emoji = '☀️'; sub = 'Ready to make progress today?'; }
+  else if (h < 18) { timeLabel = 'Good Afternoon'; emoji = '🌤️'; sub = "What's on your mind?"; }
+  greetingEl.innerHTML = `${timeLabel}, Huy <em>${emoji}</em>`;
+  sublineEl.textContent = sub;
+
+  // Search modes
+  const placeholders = {
+    search: ['Explain quantum physics', 'Find study notes', 'Open Canva'],
+    ai: ['Generate essay ideas', 'Summarize this chapter', 'Brainstorm a project'],
+    notes: ['Search my notes…', 'Find biology revision', 'Open journal entry']
+  };
+  let pIdx = 0;
+  const searchInput = document.getElementById('searchInput');
+  document.querySelectorAll('.mode').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mode').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const list = placeholders[btn.dataset.mode];
+      searchInput.placeholder = list[0];
+    });
+  });
+  // Rotate placeholder
+  setInterval(() => {
+    const active = document.querySelector('.mode.active').dataset.mode;
+    const list = placeholders[active];
+    pIdx = (pIdx + 1) % list.length;
+    searchInput.placeholder = list[pIdx];
+  }, 3500);
+
+  document.getElementById('sendBtn').addEventListener('click', go);
+  searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  function go() {
+    const q = searchInput.value.trim();
+    if (!q) return showToast('Type something to search ✨');
+    const mode = document.querySelector('.mode.active').dataset.mode;
+    if (mode === 'search') window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank');
+    else showToast(mode === 'ai' ? 'Luna is thinking…' : 'Searching your notes…');
+  }
+
+  // Moods
+  const moodMap = {
+    focused: '<strong>Focused</strong> — Try Study Mode · Pomodoro · Flashcards',
+    calm: '<strong>Calm</strong> — Open Journal · Lo-fi sounds · Breathing exercise',
+    inspired: '<strong>Inspired</strong> — Creative challenge · Pinterest inspiration · AI image ideas',
+    creative: '<strong>Creative</strong> — Open Figma · Mood board · Sketch a poster',
+    tired: '<strong>Tired</strong> — Short break · Stretch · Listen to ambient music'
+  };
+  const moodBox = document.getElementById('moodSuggestions');
+  document.querySelectorAll('#moods .mood').forEach(m => {
+    m.addEventListener('click', () => {
+      document.querySelectorAll('#moods .mood').forEach(x => x.classList.remove('selected'));
+      m.classList.add('selected');
+      moodBox.innerHTML = moodMap[m.dataset.mood];
+      moodBox.classList.add('visible');
+    });
+  });
+
+  // Sound chips
+  document.querySelectorAll('.sound-chip').forEach(c => c.addEventListener('click', () => {
+    document.querySelectorAll('.sound-chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    showToast('Ambient: ' + c.textContent);
+  }));
+
+  // Music play
+  const playBtn = document.getElementById('musicPlay');
+  let playing = false;
+  playBtn.addEventListener('click', () => {
+    playing = !playing;
+    playBtn.textContent = playing ? '⏸' : '▶';
+    showToast(playing ? 'Playing Lo-fi Study Beats 🎧' : 'Paused');
+  });
+
+  // Card actions
+  document.querySelectorAll('.continue-btn, .card-action, .luna-chip, .item, .vision-tile, .feed-item').forEach(el => {
+    el.addEventListener('click', e => {
+      const txt = el.textContent.trim().slice(0, 40);
+      showToast('✨ ' + txt);
+    });
+  });
+
+  document.getElementById('themeBtn').addEventListener('click', () => showToast('Theme: Lavender Aurora (Moonlight Cafe coming soon)'));
+</script>
+</body>
+</html>
