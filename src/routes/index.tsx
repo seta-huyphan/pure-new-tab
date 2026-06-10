@@ -16,7 +16,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   return (
     <iframe
-      src="/newtab.html"
+      src="/newtab-15-18.html"
       title="My Adventure Start Page"
       style={{ width: "100vw", height: "100vh", border: "none", display: "block" }}
     />
