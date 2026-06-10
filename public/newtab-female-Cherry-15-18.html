@@ -82,18 +82,28 @@
     100% { transform: translate(-4%, 3%) scale(1.08); }
   }
   .particles { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+  /* Sakura petal: oval shape with soft pink gradient */
   .particle {
-    position: absolute; width: 4px; height: 4px; border-radius: 50%;
-    background: var(--lavender);
-    opacity: 0.5; filter: blur(0.5px);
-    animation: float-up linear infinite;
+    position: absolute;
+    width: 14px; height: 11px;
+    background: radial-gradient(ellipse at 30% 30%, #FFE6EE 0%, var(--pink) 55%, #E89AAA 100%);
+    border-radius: 150% 0 150% 0 / 100% 0 100% 0;
+    opacity: 0.85;
+    filter: drop-shadow(0 2px 4px rgba(177,133,167,0.25));
+    animation: petal-fall linear infinite;
+    transform-origin: center;
   }
-  @keyframes float-up {
-    0% { transform: translateY(0) translateX(0); opacity: 0; }
-    10% { opacity: 0.6; }
-    90% { opacity: 0.4; }
-    100% { transform: translateY(-110vh) translateX(40px); opacity: 0; }
+  @media (prefers-color-scheme: dark) {
+    .particle { opacity: 0.55; filter: drop-shadow(0 2px 6px rgba(196,181,253,0.35)); }
   }
+  @keyframes petal-fall {
+    0%   { transform: translate3d(0, -10vh, 0) rotate(0deg);   opacity: 0; }
+    10%  { opacity: 0.9; }
+    50%  { transform: translate3d(40px, 50vh, 0) rotate(180deg); }
+    90%  { opacity: 0.8; }
+    100% { transform: translate3d(-30px, 110vh, 0) rotate(360deg); opacity: 0; }
+  }
+
 
   /* Layout */
   .shell {
