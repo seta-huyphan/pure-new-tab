@@ -655,18 +655,18 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  // Particles
+  // Falling sakura petals
   const pContainer = document.getElementById('particles');
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 28; i++) {
     const p = document.createElement('div');
     p.className = 'particle';
     p.style.left = Math.random() * 100 + '%';
-    p.style.bottom = -Math.random() * 20 + '%';
-    p.style.animationDuration = (12 + Math.random() * 18) + 's';
-    p.style.animationDelay = Math.random() * 12 + 's';
-    const colors = ['#E8B4BC', '#D4A373', '#CDB4DB', '#FFF8F0'];
-    p.style.background = colors[i % colors.length];
-    p.style.width = p.style.height = (2 + Math.random() * 4) + 'px';
+    p.style.top = (-10 - Math.random() * 30) + '%';
+    p.style.animationDuration = (10 + Math.random() * 14) + 's';
+    p.style.animationDelay = Math.random() * 14 + 's';
+    const scale = 0.6 + Math.random() * 1.1;
+    p.style.transform = `scale(${scale})`;
+    p.style.opacity = (0.55 + Math.random() * 0.35).toString();
     pContainer.appendChild(p);
   }
 
